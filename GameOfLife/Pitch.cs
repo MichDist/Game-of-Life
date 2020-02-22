@@ -14,8 +14,8 @@ namespace GameOfLife
         // Pitch is a 3dim array = two 2dim array. 
         // One for the current frame and one for the next frame.
         // There is also a border
-        const int PITCH_WIDTH = 100;
-        const int PITCH_HEIGHT = 100;
+        const int PITCH_WIDTH = 400;
+        const int PITCH_HEIGHT = 400;
 
         const int UPDATE_INTERVAL = 33;
 
@@ -25,12 +25,14 @@ namespace GameOfLife
 
         SpriteBatch spriteBatch;
         Texture2D livingCellTexture;
+        Input input;
 
-        public Pitch(Game game, SpriteBatch spriteBatch) : base(game)
+        public Pitch(Game game, SpriteBatch spriteBatch, Input input) : base(game)
         {
             cells = new bool[2, PITCH_WIDTH + 2, PITCH_HEIGHT + 2];
             rects = new Rectangle[PITCH_WIDTH, PITCH_HEIGHT];
             this.spriteBatch = spriteBatch;
+            this.input = input;
         }
 
         protected override void LoadContent()
@@ -51,6 +53,11 @@ namespace GameOfLife
 
         public override void Update(GameTime gameTime)
         {
+            if(input.SpaceTrigger)
+            {
+                createRandomCells(20);
+            }
+
             #region Game_logic
             millisecondsSinceLastUpdate += gameTime.ElapsedGameTime.Milliseconds;
 
@@ -145,15 +152,29 @@ namespace GameOfLife
             int width = GraphicsDevice.Viewport.Width;
             int height = GraphicsDevice.Viewport.Height;
 
-            int cellWidth = width / PITCH_WIDTH;
-            int cellHeight = height / PITCH_HEIGHT;
+            if (oldWidth != width || oldHeight != height)
+            {
 
-            int cellSize = Math.Min(cellWidth, cellHeight);
+                int cellWidth = width / PITCH_WIDTH;
+                int cellHeight = height / PITCH_HEIGHT;
 
-            int offsetX = (width - (cellSize * PITCH_WIDTH)) / 2;
-            int offsetY = (height - (cellSize * PITCH_HEIGHT) / 2);
+                int cellSize = Math.Min(cellWidth, cellHeight);
 
+                // For the pitch
+                int offsetX = (width - (cellSize * PITCH_WIDTH)) / 2;
+                int offsetY = (height - (cellSize * PITCH_HEIGHT) / 2);
 
+                for (int y = 0; y < PITCH_HEIGHT; y++)
+                {
+                    for (int x = 0; x < PITCH_WIDTH; x++)
+                    {
+                        rects[x, y] = new Rectangle(offsetX + x * cellSize, offsetY + y * cellSize, cellSize, cellSize);
+                    }
+                }
+
+                oldWidth = width;
+                oldHeight = height;
+            }
 
             #endregion
 
@@ -162,7 +183,42 @@ namespace GameOfLife
 
         public override void Draw(GameTime gameTime)
         {
+            spriteBatch.Begin();
+
+            for(int y = 1; y < PITCH_HEIGHT + 1; y++)
+            {
+                for(int x = 1; x <PITCH_WIDTH + 1; x++)
+                {
+                    if (cells[currentIndex, x, y])
+                    {
+                        spriteBatch.Draw(livingCellTexture, rects[x - 1, y - 1], Color.White);
+                    }          
+                }
+            }
+
+            spriteBatch.End();
+                                                                   
             base.Draw(gameTime);
+        }
+
+        private void createRandomCells(int probability)
+        {
+            Random r = new Random();
+
+            for(int x = 1; x < PITCH_WIDTH + 1; x++)
+            {
+                for(int y = 1; y < PITCH_HEIGHT + 1; y++)
+                {
+                    if(r.Next(0, probability) == 0)
+                    {
+                        cells[currentIndex, x, y] = true;
+                    }
+                    else
+                    {
+                        cells[currentIndex, x, y] = false;
+                    }
+                }
+            }
         }
     }
 }

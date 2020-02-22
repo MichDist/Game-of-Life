@@ -12,10 +12,17 @@ namespace GameOfLife
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Input input;
+        Pitch pitch;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            // 
+            this.graphics.PreferredBackBufferWidth = 1000;
+            this.graphics.PreferredBackBufferHeight = 1000;
         }
 
         /// <summary>
@@ -27,6 +34,16 @@ namespace GameOfLife
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+           spriteBatch = new SpriteBatch(GraphicsDevice);
+            input = new Input(this);
+            pitch = new Pitch(this, spriteBatch, input);
+
+            input.UpdateOrder = 1;
+            pitch.UpdateOrder = 2;
+
+            this.Components.Add(input);
+            this.Components.Add(pitch);
+
 
             base.Initialize();
         }
@@ -38,7 +55,7 @@ namespace GameOfLife
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            
 
             // TODO: use this.Content to load your game content here
         }
@@ -73,7 +90,7 @@ namespace GameOfLife
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
 
